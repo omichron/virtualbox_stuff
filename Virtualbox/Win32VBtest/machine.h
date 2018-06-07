@@ -1,0 +1,25 @@
+#pragma once
+#include <string>
+#include "VirtualBox.h"
+#include "utilities.h"
+#include "wrappers.hpp"
+
+namespace vb
+{
+  class machine
+  {
+  public:
+    explicit machine(IMachine* vb_machine);
+    ~machine();
+  private:
+    vb::wrapper::unknown<IMachine> vb_machine = nullptr;
+    vb::wrapper::unknown<ISession> vb_session = nullptr;
+  public:
+    std::string get_name();
+    void start();
+    inline IMachine* get_machine_instance() { return vb_machine.ptr(); }
+    inline ISession* get_session_instance() { return vb_session.ptr(); }
+  };
+}
+
+

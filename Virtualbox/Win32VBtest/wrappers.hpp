@@ -1,35 +1,41 @@
 #pragma once
 #include "utilities.h"
 #include <list>
+#include <type_traits>
+#include <windows.h>
 
 namespace vb::wrapper
 {
+  template<typename TUnknown, typename TEnable = void>
+  class unknown;
+
   template<typename TUnknown>
-  class unknown
+  class unknown<TUnknown, 
+    typename std::enable_if<std::is_base_of_v<IUnknown, TUnknown>>::type>
   {
   public:
-    unknown<TUnknown>(TUnknown* iunknown_ = nullptr)
-      : iunknown(iunknown_)
+    unknown(TUnknown* unknown = nullptr)
+      : _unknown(unknown)
     { }
         
-    ~unknown<TUnknown>()
+    ~unknown()
     {
       safe_release();
     }
 
-    TUnknown*& ptr() { return iunknown; }
+    auto& ptr() { return _unknown; }
 
   private:
     void safe_release()
     {
-      if (iunknown)
+      if (_unknown)
       {
-        iunknown->Release();
-        iunknown = nullptr;
+        _unknown->Release();
+        _unknown = nullptr;
       }
     }
 
-    TUnknown* iunknown = nullptr;
+    TUnknown* _unknown = nullptr;
   };
 
   class bstr
@@ -48,7 +54,7 @@ namespace vb::wrapper
       SysFreeString(_bstr);
     }
 
-    BSTR& get()
+    auto& get()
     {
       return _bstr;
     }
@@ -78,7 +84,7 @@ namespace vb::wrapper
       SafeArrayDestroy(_safe_array);
     }
 
-    SAFEARRAY*& ptr()
+    auto& ptr()
     {
       return _safe_array;
     }

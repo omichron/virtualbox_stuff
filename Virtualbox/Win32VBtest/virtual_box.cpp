@@ -31,12 +31,12 @@ IVirtualBox *virtual_box::get_virtual_box_instance()
 
 std::list<machine> virtual_box::get_machines()
 {
-  SAFEARRAY *machinesArray = nullptr;
+  vb::wrapper::safe_array<vb::machine> machine_array;
 
-  int rc = vb_virtual_box.ptr()->get_Machines(&machinesArray);
+  int rc = vb_virtual_box.ptr()->get_Machines(&machine_array.ptr());
   vb::util::throw_if_failed(rc, "Could not enumerate machines");
 
-  return vb::util::to_std_list<machine, IMachine>(machinesArray);
+  return machine_array.as_std_list();
 }
 
 machine virtual_box::find_machine(const std::string& name_or_id)

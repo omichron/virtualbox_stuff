@@ -9,6 +9,8 @@ namespace vb
   class machine
   {
   public:
+    using i_unknown = IMachine;
+
     explicit machine(IMachine* vb_machine);
     ~machine();
   private:

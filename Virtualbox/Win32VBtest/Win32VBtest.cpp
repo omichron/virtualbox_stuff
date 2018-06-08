@@ -44,50 +44,19 @@ int testErrorInfo(vb::virtual_box& virtual_box)
 
 int testStartVM(vb::virtual_box& virtual_box)
 {
-	HRESULT rc;
-  auto virtualBox = virtual_box.get_virtual_box_instance();
-
   try
   {
     auto machine = virtual_box.find_machine("Android");
 
-    IConsole *console = NULL;
-    IProgress *progress = NULL;
-
-    auto vm_machine = machine.get_machine_instance();
-
-    do
-    {
       /* Wait until VM is running. */
       printf("Starting VM, please wait ...\n");
       
-      machine.start();
+    machine.start();
 
-      /* Get console object. */
-      machine.get_session_instance()->get_Console(&console);
+    printf("Press enter to power off VM and close the session...\n");
+    getchar();
 
-      /* Bring console window to front. */
-      vm_machine->ShowConsoleWindow(0);
-
-      printf("Press enter to power off VM and close the session...\n");
-      getchar();
-
-      /* Power down the machine. */
-      rc = console->PowerDown(&progress);
-
-      /* Wait until VM is powered down. */
-      printf("Powering off VM, please wait ...\n");
-      rc = progress->WaitForCompletion(-1);
-
-      printf("Done ...\n");
-
-      /* Close the session. */
-      rc = machine.get_session_instance()->UnlockMachine();
-
-    } while (0);
-
-    SAFE_RELEASE(console);
-    SAFE_RELEASE(progress);
+    machine.power_down();
   }
   catch (std::exception ex)
   {

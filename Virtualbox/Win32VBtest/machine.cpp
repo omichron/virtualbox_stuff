@@ -4,15 +4,17 @@
 
 using namespace vb;
 
-machine::machine(IMachine* vb_machine)
-  : vb_machine(vb_machine)
+machine::machine(IMachine* vb_machine_)
+  : vb_machine(vb_machine_)
 {
-  vb_machine->AddRef();
+  vb_machine.ptr()->AddRef();
 }
 
 machine::~machine()
 {
 }
+
+
 
 std::string machine::get_name()
 {
@@ -41,4 +43,28 @@ void machine::start()
   util::throw_if_failed(rc, "Could not open remote session");
 
   rc = progress.ptr()->WaitForCompletion(-1);
+  util::throw_if_failed(rc, "Could not wait for completion");
+
+  /* Get console object. */
+  vb_session.ptr()->get_Console(&vb_console.ptr());
 }
+
+void vb::machine::power_down()
+{
+  if (!vb_session.ptr())
+    return;
+
+  vb::wrapper::unknown<IProgress> progress;
+
+  auto rc = vb_console.ptr()->PowerDown(&progress.ptr());
+  util::throw_if_failed(rc, "Could not power machine down");
+
+  rc = progress.ptr()->WaitForCompletion(-1);
+  util::throw_if_failed(rc, "Could not wait for completion");
+
+  rc = vb_session.ptr()->UnlockMachine();
+
+  vb_console = nullptr;
+  vb_session = nullptr;
+}
+

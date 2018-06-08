@@ -10,13 +10,63 @@ namespace vb::wrapper
   class unknown;
 
   template<typename TUnknown>
-  class unknown<TUnknown, 
-    typename std::enable_if<std::is_base_of_v<IUnknown, TUnknown>>::type>
+  using derived_from_IUnknown = std::is_base_of<IUnknown, TUnknown>;
+
+  template<typename TUnknown>
+  class unknown<TUnknown, typename std::enable_if<derived_from_IUnknown<TUnknown>::value>::type>
   {
   public:
     unknown(TUnknown* unknown = nullptr)
-      : _unknown(unknown)
-    { }
+    { 
+      _unknown = unknown;
+    }
+
+    unknown(const unknown<TUnknown>& other)
+    {
+      _unknown = other._unknown;
+      _unknown->AddRef();
+    }
+
+    unknown& operator=(const unknown<TUnknown&> other)
+    {
+      if (this != &other)
+      {
+        safe_release();
+        _unknown = other._unknown;
+        _unknown->AddRef();
+      }
+
+      return *this;
+    }
+
+    unknown(unknown<TUnknown>&& other)
+    {
+      _unknown = other._unknown;
+      other._unknown = nullptr;
+    }
+
+    unknown& operator=(unknown<TUnknown>&& other)
+    {
+      if (this != &other)
+      {
+        safe_release();
+        _unknown = other._unknown;
+        other._unknown = nullptr;
+      }
+
+      return *this;
+    }
+
+    unknown& operator=(TUnknown* unknown)
+    {
+      if (_unknown != unknown)
+      {
+        safe_release();
+        _unknown = unknown;
+      }
+      
+      return *this;
+    }
         
     ~unknown()
     {

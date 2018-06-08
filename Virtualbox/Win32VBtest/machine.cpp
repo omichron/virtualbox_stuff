@@ -4,10 +4,9 @@
 
 using namespace vb;
 
-machine::machine(IMachine* vb_machine_)
+machine::machine(vb::wrapper::unknown<IMachine>& vb_machine_)
   : vb_machine(vb_machine_)
 {
-  vb_machine->AddRef();
 }
 
 machine::~machine()

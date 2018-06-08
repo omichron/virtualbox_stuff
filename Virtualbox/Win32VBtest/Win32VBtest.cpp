@@ -20,7 +20,7 @@
 int listVMs(vb::virtual_box& virtual_box)
 {
   for(auto& machine : virtual_box.get_machines())
-    std::cout << machine.get_name() << std::endl;;
+    std::cout << vb::machine(machine).get_name() << std::endl;;
  
   return 0;
 }

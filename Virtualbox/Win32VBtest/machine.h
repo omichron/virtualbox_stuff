@@ -9,14 +9,12 @@ namespace vb
   class machine
   {
   public:
-    using i_unknown = IMachine;
-
-    explicit machine(IMachine* vb_machine);
+    explicit machine(vb::wrapper::unknown<IMachine>& vb_machine);
     ~machine();
   private:
-    vb::wrapper::unknown<IMachine> vb_machine = nullptr;
-    vb::wrapper::unknown<ISession> vb_session = nullptr;
-    vb::wrapper::unknown<IConsole> vb_console = nullptr;
+    vb::wrapper::unknown<IMachine> vb_machine;
+    vb::wrapper::unknown<ISession> vb_session;
+    vb::wrapper::unknown<IConsole> vb_console;
 
   public:
     std::string get_name();

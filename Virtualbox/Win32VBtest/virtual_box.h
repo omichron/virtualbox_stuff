@@ -13,11 +13,11 @@ namespace vb
     ~virtual_box();
 
   public:
-    std::list<machine> get_machines();
+    std::list<vb::wrapper::unknown<IMachine>> get_machines();
 
   private:
-    vb::wrapper::unknown<IVirtualBoxClient> vb_client = nullptr;
-    vb::wrapper::unknown<IVirtualBox> vb_virtual_box = nullptr;
+    vb::wrapper::unknown<IVirtualBoxClient> vb_client;
+    vb::wrapper::unknown<IVirtualBox> vb_virtual_box;
 
   public:
     machine find_machine(const std::string& name_or_id);

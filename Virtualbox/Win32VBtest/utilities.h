@@ -15,7 +15,7 @@ namespace vb::util
       ~error_info();
       std::string get_description();
     private:
-      vb::wrapper::unknown<IErrorInfo> vb_error_info = nullptr;
+      vb::wrapper::unknown<IErrorInfo> vb_error_info;
     };
 }
 

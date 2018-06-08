@@ -24,9 +24,9 @@ virtual_box::~virtual_box()
 {
 }
 
-std::list<machine> virtual_box::get_machines()
+std::list<vb::wrapper::unknown<IMachine>> virtual_box::get_machines()
 {
-  vb::wrapper::safe_array<vb::machine> machine_array;
+  vb::wrapper::safe_array<vb::wrapper::unknown<IMachine>> machine_array;
 
   int rc = vb_virtual_box->get_Machines(machine_array);
   vb::util::throw_if_failed(rc, "Could not enumerate machines");
@@ -36,9 +36,9 @@ std::list<machine> virtual_box::get_machines()
 
 machine virtual_box::find_machine(const std::string& name_or_id)
 {
-  IMachine* vb_machine;
+  vb::wrapper::unknown<IMachine> vb_machine;
   
-  auto rc = vb_virtual_box->FindMachine(wrapper::bstr(name_or_id), &vb_machine);
+  auto rc = vb_virtual_box->FindMachine(wrapper::bstr(name_or_id), vb_machine);
   util::throw_if_failed(rc, "Failed to find machine");
 
   return machine(vb_machine);

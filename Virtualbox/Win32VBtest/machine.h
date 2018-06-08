@@ -22,8 +22,6 @@ namespace vb
     std::string get_name();
     void start();
     void power_down();
-    inline IMachine* get_machine_instance() { return vb_machine.ptr(); }
-    inline ISession* get_session_instance() { return vb_session.ptr(); }
   };
 }
 

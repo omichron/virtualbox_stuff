@@ -73,8 +73,26 @@ namespace vb::wrapper
       safe_release();
     }
 
-    auto& ptr() { return _unknown; }
+    auto operator->()
+    {
+      return _unknown;
+    }
 
+    bool is_valid()
+    {
+      return _unknown != nullptr;
+    }
+
+    operator TUnknown**()
+    {
+      return &_unknown;
+    }
+
+    operator TUnknown*()
+    {
+      return _unknown;
+    }
+      
   private:
     void safe_release()
     {
@@ -104,7 +122,7 @@ namespace vb::wrapper
       SysFreeString(_bstr);
     }
 
-    auto& get()
+    operator BSTR&()
     {
       return _bstr;
     }
@@ -134,9 +152,14 @@ namespace vb::wrapper
       SafeArrayDestroy(_safe_array);
     }
 
-    auto& ptr()
+    operator SAFEARRAY*()
     {
       return _safe_array;
+    }
+
+    operator SAFEARRAY**()
+    {
+      return &_safe_array;
     }
 
     auto as_std_list()

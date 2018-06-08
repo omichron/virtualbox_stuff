@@ -77,8 +77,6 @@ int main()
 
     listVMs(virtual_box);
     testErrorInfo(virtual_box);
-
-    /* Enable the following line to get a VM started. */
     testStartVM(virtual_box);
   }
   CoUninitialize();

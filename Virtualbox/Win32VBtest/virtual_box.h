@@ -13,7 +13,6 @@ namespace vb
     ~virtual_box();
 
   public:
-    IVirtualBox *get_virtual_box_instance();
     std::list<machine> get_machines();
 
   private:

@@ -5,7 +5,7 @@ using namespace vb;
 
 util::error_info::error_info()
 {
-  auto rc = GetErrorInfo(0, &vb_error_info.ptr());
+  auto rc = GetErrorInfo(0, vb_error_info);
   if (FAILED(rc))
     vb_error_info = nullptr;
 }
@@ -15,11 +15,11 @@ util::error_info::~error_info()
 
 std::string util::error_info::get_description()
 {
-  if (!vb_error_info.ptr())
+  if (!vb_error_info.is_valid())
     return "No error information available";
   
   BSTR errorDescription = nullptr;
-  auto rc = vb_error_info.ptr()->GetDescription(&errorDescription);
+  auto rc = vb_error_info->GetDescription(&errorDescription);
 
   if (FAILED(rc) || !errorDescription)
     return "Could not retrieve error information";

@@ -34,16 +34,14 @@ void machine::start()
   util::throw_if_failed(rc, "Error creating Session instance");
 
   vb::wrapper::unknown<IProgress> progress;
-
-  /* Start a VM session using the delivered VBox GUI. */
-  rc = vb_machine->LaunchVMProcess(vb_session, wrapper::bstr("gui"), NULL, progress);
-  util::throw_if_failed(rc, "Could not open remote session");
+  progress.create_mem(
+    &IMachine::LaunchVMProcess, vb_machine, vb_session,
+    wrapper::bstr("gui"), nullptr);
 
   rc = progress->WaitForCompletion(-1);
   util::throw_if_failed(rc, "Could not wait for completion");
 
-  /* Get console object. */
-  vb_session->get_Console(vb_console);
+  vb_console.create_mem(&ISession::get_Console, vb_session);
 }
 
 void vb::machine::power_down()
@@ -52,11 +50,9 @@ void vb::machine::power_down()
     return;
 
   vb::wrapper::unknown<IProgress> progress;
+  progress.create_mem(&IConsole::PowerDown, vb_console);
 
-  auto rc = vb_console->PowerDown(progress);
-  util::throw_if_failed(rc, "Could not power machine down");
-
-  rc = progress->WaitForCompletion(-1);
+  auto rc = progress->WaitForCompletion(-1);
   util::throw_if_failed(rc, "Could not wait for completion");
 
   rc = vb_session->UnlockMachine();

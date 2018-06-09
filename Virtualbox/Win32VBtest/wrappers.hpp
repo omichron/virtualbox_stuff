@@ -21,6 +21,9 @@ namespace vb::wrapper
   template<typename TUnknown>
   class unknown<TUnknown, typename std::enable_if<derived_from_IUnknown<TUnknown>::value>::type>
   {
+  template <typename TUnknownOther, typename TEnable>
+  friend class unknown;
+
   public:
     using i_unknown = TUnknown;
 
@@ -96,11 +99,28 @@ namespace vb::wrapper
       return _unknown != nullptr;
     }
 
-    operator TUnknown**()
+    template<typename F, typename... Args>
+    void create(F&& f, Args&&... args)
     {
-      return &_unknown;
+      auto rc = std::invoke(std::forward<F>(f), std::forward<Args>(args)..., &_unknown);
+      util::throw_if_failed(rc, typeid(F).name());
     }
 
+    template<typename F, typename TUnknownOther, typename... Args>
+    void create_mem(F&& f, TUnknownOther other, Args&&... args)
+    {
+      auto rc = std::invoke(std::forward<F>(f), other._unknown, std::forward<Args>(args)..., &_unknown);
+      util::throw_if_failed(rc, typeid(F).name());
+    }
+
+    template<typename F, typename... Args>
+    void create_voidpp(F&& f, Args&&... args)
+    {
+      auto rc = std::invoke(std::forward<F>(f), std::forward<Args>(args)..., 
+        reinterpret_cast<void**>(&_unknown));
+      util::throw_if_failed(rc, typeid(F).name());
+    }
+   
     operator TUnknown*()
     {
       return _unknown;

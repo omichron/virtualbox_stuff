@@ -5,9 +5,14 @@ using namespace vb;
 
 util::error_info::error_info()
 {
-  auto rc = GetErrorInfo(0, vb_error_info);
-  if (FAILED(rc))
+  try
+  {
+    vb_error_info.create(GetErrorInfo, 0);
+  }
+  catch (...)
+  {
     vb_error_info = nullptr;
+  }
 }
 
 util::error_info::~error_info()

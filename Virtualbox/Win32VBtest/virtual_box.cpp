@@ -9,15 +9,13 @@ using namespace vb;
 
 virtual_box::virtual_box()
 {
-  HRESULT rc = CoCreateInstance(CLSID_VirtualBoxClient, /* the VirtualBoxClient object */
-    NULL,                   /* no aggregation */
-    CLSCTX_INPROC_SERVER,   /* the object lives in the current process */
-    IID_IVirtualBoxClient,  /* IID of the interface */
-    (void**)static_cast<IVirtualBoxClient**>(vb_client));
-  vb::util::throw_if_failed(rc, "Could not create virtual box client instance");
+  vb_client.create_voidpp(CoCreateInstance, CLSID_VirtualBoxClient,
+    nullptr,
+    CLSCTX_INPROC_SERVER,
+    IID_IVirtualBoxClient);
 
-  rc = vb_client->get_VirtualBox(vb_virtual_box);
-  vb::util::throw_if_failed(rc, "Could not create virtual box instance");
+  vb_virtual_box.create_mem(
+    &IVirtualBoxClient::get_VirtualBox, vb_client);
 }
 
 virtual_box::~virtual_box()
@@ -36,10 +34,8 @@ std::list<vb::wrapper::unknown<IMachine>> virtual_box::get_machines()
 
 machine virtual_box::find_machine(const std::string& name_or_id)
 {
-  vb::wrapper::unknown<IMachine> vb_machine;
-  
-  auto rc = vb_virtual_box->FindMachine(wrapper::bstr(name_or_id), vb_machine);
-  util::throw_if_failed(rc, "Failed to find machine");
+  wrapper::unknown<IMachine> vb_machine;
+  vb_machine.create_mem(&IVirtualBox::FindMachine, vb_virtual_box, wrapper::bstr(name_or_id));
 
   return machine(vb_machine);
 }

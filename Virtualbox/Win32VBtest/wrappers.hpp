@@ -18,6 +18,18 @@ namespace vb::wrapper
   template<typename TUnknown>
   using derived_from_IUnknown = std::is_base_of<IUnknown, TUnknown>;
 
+  template<typename TUnknown, typename F, typename... Args>
+  auto create_invoke_void(F&& f, Args&&... args)
+  {
+    return unknown<TUnknown>::create_impl<TUnknown, void>(std::forward<F>(f), std::forward<Args>(args)...);
+  }
+
+  template<typename TUnknown, typename F, typename... Args>
+  auto create_invoke(F&& f, Args&&... args)
+  {
+    return unknown<TUnknown>::create_impl<TUnknown, TUnknown>(std::forward<F>(f), std::forward<Args>(args)...);
+  }
+
   template<typename TUnknown>
   class unknown<TUnknown, typename std::enable_if<derived_from_IUnknown<TUnknown>::value>::type>
   {
@@ -99,40 +111,36 @@ namespace vb::wrapper
       return _unknown != nullptr;
     }
 
-    template<typename F, typename... Args>
-    void create(F&& f, Args&&... args)
+    template<typename TDeclared, typename TCasted, typename F, typename... Args>
+    static auto create_impl(F&& f, Args&&... args)
     {
-      auto rc = std::invoke(std::forward<F>(f), std::forward<Args>(args)..., &_unknown);
-      util::throw_if_failed(rc, typeid(F).name());
-    }
+      TDeclared* u = nullptr;
 
-    template<typename F, typename TUnknownOther, typename... Args>
-    void create_mem(F&& f, TUnknownOther other, Args&&... args)
-    {
-      auto rc = std::invoke(std::forward<F>(f), other._unknown, std::forward<Args>(args)..., &_unknown);
-      util::throw_if_failed(rc, typeid(F).name());
-    }
-
-    template<typename F, typename... Args>
-    void create_voidpp(F&& f, Args&&... args)
-    {
       auto rc = std::invoke(std::forward<F>(f), std::forward<Args>(args)..., 
-        reinterpret_cast<void**>(&_unknown));
+        reinterpret_cast<TCasted**>(&u));
       util::throw_if_failed(rc, typeid(F).name());
+
+      return unknown<TDeclared>::wrap(u);
     }
-   
+
+    template<typename TOutput, typename F, typename... Args>
+    auto create_invoke(F&& f, Args&&... args)
+    {
+      return create_impl<TOutput, TOutput>(std::forward<F>(f), _unknown, std::forward<Args>(args)...);
+    }
+  
     operator TUnknown*()
     {
       return _unknown;
     }
     
+  private:
     void add_reference()
     {
       auto count = _unknown->AddRef();
       printf("==> %s: add_reference: %u\n", typeid(TUnknown).name(), count);
     }
 
-  private:
     void safe_release()
     {
       if (_unknown)
@@ -141,6 +149,13 @@ namespace vb::wrapper
         printf("==> %s: safe_release:  %u\n", typeid(TUnknown).name(), count);
         _unknown = nullptr;
       }
+    }
+
+    static auto wrap(TUnknown* u)
+    {
+      unknown wrapped = u;
+      u->Release();
+      return wrapped;
     }
 
     TUnknown* _unknown = nullptr;
@@ -186,7 +201,6 @@ namespace vb::wrapper
       auto end = begin + _safe_array->rgsabound[0].cElements;
 
       TCollection return_collection(begin, end);
-      //std::for_each(return_collection.begin(), return_collection.end(), std::mem_fn(&vb::wrapper::unknown<TElement::i_unknown>::add_reference));
 
       SafeArrayUnaccessData(_safe_array);
 

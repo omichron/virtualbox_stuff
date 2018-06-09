@@ -26,22 +26,20 @@ void machine::start()
   if (vb_session.is_valid())
     return;
 
-  HRESULT rc = CoCreateInstance(CLSID_Session,    /* the VirtualBox base object */
-    NULL,                 /* no aggregation */
-    CLSCTX_INPROC_SERVER, /* the object lives in the current process */
-    IID_ISession,         /* IID of the interface */
-    (void**)&vb_session);
-  util::throw_if_failed(rc, "Error creating Session instance");
+  vb_session = vb::wrapper::create_invoke_void<ISession>(
+    CoCreateInstance,
+    CLSID_Session,
+    nullptr,
+    CLSCTX_INPROC_SERVER,
+    IID_ISession);
 
-  vb::wrapper::unknown<IProgress> progress;
-  progress.create_mem(
-    &IMachine::LaunchVMProcess, vb_machine, vb_session,
-    wrapper::bstr("gui"), nullptr);
+  auto progress = vb_machine.create_invoke<IProgress>(&IMachine::LaunchVMProcess, 
+    vb_session, wrapper::bstr("gui"), nullptr);
 
-  rc = progress->WaitForCompletion(-1);
+  auto rc = progress->WaitForCompletion(-1);
   util::throw_if_failed(rc, "Could not wait for completion");
 
-  vb_console.create_mem(&ISession::get_Console, vb_session);
+  vb_console = vb_session.create_invoke<IConsole>(&ISession::get_Console);
 }
 
 void vb::machine::power_down()
@@ -49,10 +47,9 @@ void vb::machine::power_down()
   if (!vb_session.is_valid())
     return;
 
-  vb::wrapper::unknown<IProgress> progress;
-  progress.create_mem(&IConsole::PowerDown, vb_console);
-
+  auto progress = vb_console.create_invoke<IProgress>(&IConsole::PowerDown);
   auto rc = progress->WaitForCompletion(-1);
+
   util::throw_if_failed(rc, "Could not wait for completion");
 
   rc = vb_session->UnlockMachine();

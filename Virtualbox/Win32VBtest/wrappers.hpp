@@ -6,6 +6,43 @@
 #include <algorithm>
 #include <functional>
 #include <typeinfo>
+#include <tuple>
+
+template <class F> struct ArgType;
+template <class F> struct ArgLastIndex;
+
+template <class R, typename... Args>
+struct ArgType<R(&)(Args...)>
+{
+  template <size_t N>
+  struct arg
+  {
+    using type = typename std::tuple_element<N, std::tuple<Args...>>::type;
+  };
+};
+
+template <typename Ret, typename Cls, typename... Args>
+struct ArgType<Ret(Cls::*)(Args...)>
+{
+  template <size_t N>
+  struct arg {
+    using type = typename std::tuple_element<N, std::tuple<Args...>>::type;
+  };
+};
+
+template <class R, typename... Args>
+struct ArgLastIndex<R(&)(Args...)>
+{
+  using type = std::integral_constant<size_t, std::tuple_size<std::tuple<Args...>>::value - 1>;
+  constexpr static auto value = type::value;
+};
+
+template <typename Ret, typename Cls, typename... Args>
+struct ArgLastIndex<Ret(Cls::*)(Args...)>
+{
+  using type = std::integral_constant<size_t, std::tuple_size<std::tuple<Args...>>::value - 1>;
+  constexpr static auto value = type::value;
+};
 
 namespace vb::wrapper
 {
@@ -24,10 +61,17 @@ namespace vb::wrapper
     return unknown<TUnknown>::create_impl<TUnknown, void>(std::forward<F>(f), std::forward<Args>(args)...);
   }
 
-  template<typename TUnknown, typename F, typename... Args>
+  template<typename F, typename... Args>
   auto create_invoke(F&& f, Args&&... args)
   {
-    return unknown<TUnknown>::create_impl<TUnknown, TUnknown>(std::forward<F>(f), std::forward<Args>(args)...);
+    using return_type = std::remove_pointer<ArgType<F>::arg<ArgLastIndex<F>::value>::type>::type;
+    
+    return_type u;
+
+    auto rc = std::invoke(std::forward<F>(f), std::forward<Args>(args)..., &u);
+    util::throw_if_failed(rc, typeid(F).name());
+
+    return unknown<std::remove_pointer<return_type>::type>::wrap(u);
   }
 
   template<typename TUnknown>
@@ -37,6 +81,38 @@ namespace vb::wrapper
   friend class unknown;
 
   public:
+    template<typename TDeclared, typename TCasted, typename F, typename... Args>
+    static auto create_impl(F&& f, Args&&... args)
+    {
+      TDeclared* u = nullptr;
+
+      auto rc = std::invoke(std::forward<F>(f), std::forward<Args>(args)...,
+        reinterpret_cast<TCasted**>(&u));
+      util::throw_if_failed(rc, typeid(F).name());
+
+      return unknown<TDeclared>::wrap(u);
+    }
+
+    template<typename TOutput, typename F, typename... Args>
+    auto create_invoke_old(F&& f, Args&&... args)
+    {
+      return create_impl<TOutput, TOutput>(std::forward<F>(f), _unknown, std::forward<Args>(args)...);
+    }
+
+    template<typename F, typename... Args>
+    auto create_invoke(F&& f, Args&&... args)
+    {
+      using return_type = std::remove_pointer<ArgType<F>::arg<ArgLastIndex<F>::value>::type>::type;
+
+      return_type u = nullptr;
+      //TOutput* u = nullptr;
+
+      auto rc = std::invoke(std::forward<F>(f), _unknown, std::forward<Args>(args)..., &u);
+      util::throw_if_failed(rc, typeid(F).name());
+
+      return unknown<std::remove_pointer<typename return_type>::type>::wrap(u);
+   }
+
     using i_unknown = TUnknown;
 
     unknown(TUnknown* unknown = nullptr)
@@ -111,30 +187,13 @@ namespace vb::wrapper
       return _unknown != nullptr;
     }
 
-    template<typename TDeclared, typename TCasted, typename F, typename... Args>
-    static auto create_impl(F&& f, Args&&... args)
-    {
-      TDeclared* u = nullptr;
-
-      auto rc = std::invoke(std::forward<F>(f), std::forward<Args>(args)..., 
-        reinterpret_cast<TCasted**>(&u));
-      util::throw_if_failed(rc, typeid(F).name());
-
-      return unknown<TDeclared>::wrap(u);
-    }
-
-    template<typename TOutput, typename F, typename... Args>
-    auto create_invoke(F&& f, Args&&... args)
-    {
-      return create_impl<TOutput, TOutput>(std::forward<F>(f), _unknown, std::forward<Args>(args)...);
-    }
-  
+ 
     operator TUnknown*()
     {
       return _unknown;
     }
     
-  private:
+    /*private:*/public:
     void add_reference()
     {
       auto count = _unknown->AddRef();

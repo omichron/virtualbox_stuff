@@ -15,7 +15,7 @@ virtual_box::virtual_box()
       CLSCTX_INPROC_SERVER,
       IID_IVirtualBoxClient))
   , vb_virtual_box(
-      vb_client.create_invoke<IVirtualBox>(&IVirtualBoxClient::get_VirtualBox))
+      vb_client.create_invoke(&IVirtualBoxClient::get_VirtualBox))
 {
 }
 
@@ -36,7 +36,7 @@ std::list<vb::wrapper::unknown<IMachine>> virtual_box::get_machines()
 machine virtual_box::find_machine(const std::string& name_or_id)
 {
   auto vb_machine =
-    vb_virtual_box.create_invoke<IMachine>(
+    vb_virtual_box.create_invoke(
       &IVirtualBox::FindMachine, wrapper::bstr(name_or_id));
 
   return machine(vb_machine);

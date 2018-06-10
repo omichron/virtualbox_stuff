@@ -8,7 +8,7 @@ util::error_info::error_info()
   try
   {
     vb_error_info = 
-      vb::wrapper::create_invoke<IErrorInfo>(GetErrorInfo, 0);
+      vb::wrapper::create_invoke(GetErrorInfo, 0);
   }
   catch (...)
   {

@@ -1,6 +1,6 @@
 Virtualbox/Win32VBtest/Debug
 Virtualbox/Win32VBtest/Win32VBtest.VC.db
-Virtualbox/Win32VBtest/.vs/
+Virtualbox/Win32VBtest/.vs
 Virtualbox/Win32VBtest/ReadMe.txt
 Virtualbox/sdk/docs
 Virtualbox/sdk/installer
@@ -17,4 +17,5 @@ Virtualbox/sdk/bindings/mscom/vb
 Virtualbox/sdk/bindings/mscom/vbs
 Virtualbox/sdk/bindings/webservice
 Virtualbox/sdk/bindings/xpcom
-Virtualbox/Win32VBtest/Release/
+Virtualbox/Win32VBtest/Release
+Virtualbox/Win32VBtest/x64

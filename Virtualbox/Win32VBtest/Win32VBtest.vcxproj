@@ -163,6 +163,7 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="function_traits.hpp" />
     <ClInclude Include="machine.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />

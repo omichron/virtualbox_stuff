@@ -7,42 +7,7 @@
 #include <functional>
 #include <typeinfo>
 #include <tuple>
-
-template <class F> struct ArgType;
-template <class F> struct ArgLastIndex;
-
-template <class R, typename... Args>
-struct ArgType<R(&)(Args...)>
-{
-  template <size_t N>
-  struct arg
-  {
-    using type = typename std::tuple_element<N, std::tuple<Args...>>::type;
-  };
-};
-
-template <typename Ret, typename Cls, typename... Args>
-struct ArgType<Ret(Cls::*)(Args...)>
-{
-  template <size_t N>
-  struct arg {
-    using type = typename std::tuple_element<N, std::tuple<Args...>>::type;
-  };
-};
-
-template <class R, typename... Args>
-struct ArgLastIndex<R(&)(Args...)>
-{
-  using type = std::integral_constant<size_t, std::tuple_size<std::tuple<Args...>>::value - 1>;
-  constexpr static auto value = type::value;
-};
-
-template <typename Ret, typename Cls, typename... Args>
-struct ArgLastIndex<Ret(Cls::*)(Args...)>
-{
-  using type = std::integral_constant<size_t, std::tuple_size<std::tuple<Args...>>::value - 1>;
-  constexpr static auto value = type::value;
-};
+#include "function_traits.hpp"
 
 namespace vb::wrapper
 {
@@ -64,14 +29,8 @@ namespace vb::wrapper
   template<typename F, typename... Args>
   auto create_invoke(F&& f, Args&&... args)
   {
-    using return_type = std::remove_pointer<ArgType<F>::arg<ArgLastIndex<F>::value>::type>::type;
-    
-    return_type u;
-
-    auto rc = std::invoke(std::forward<F>(f), std::forward<Args>(args)..., &u);
-    util::throw_if_failed(rc, typeid(F).name());
-
-    return unknown<std::remove_pointer<return_type>::type>::wrap(u);
+    using unknown_t = std::remove_pointer<std::remove_pointer<ArgumentInfo<F>::last_argument_t>::type>::type;
+    return unknown<unknown_t>::create_impl<unknown_t, unknown_t>(std::forward<F>(f), std::forward<Args>(args)...);
   }
 
   template<typename TUnknown>
@@ -86,8 +45,7 @@ namespace vb::wrapper
     {
       TDeclared* u = nullptr;
 
-      auto rc = std::invoke(std::forward<F>(f), std::forward<Args>(args)...,
-        reinterpret_cast<TCasted**>(&u));
+      auto rc = std::invoke(std::forward<F>(f), std::forward<Args>(args)..., reinterpret_cast<TCasted**>(&u));
       util::throw_if_failed(rc, typeid(F).name());
 
       return unknown<TDeclared>::wrap(u);
@@ -102,15 +60,7 @@ namespace vb::wrapper
     template<typename F, typename... Args>
     auto create_invoke(F&& f, Args&&... args)
     {
-      using return_type = std::remove_pointer<ArgType<F>::arg<ArgLastIndex<F>::value>::type>::type;
-
-      return_type u = nullptr;
-      //TOutput* u = nullptr;
-
-      auto rc = std::invoke(std::forward<F>(f), _unknown, std::forward<Args>(args)..., &u);
-      util::throw_if_failed(rc, typeid(F).name());
-
-      return unknown<std::remove_pointer<typename return_type>::type>::wrap(u);
+      return vb::wrapper::create_invoke(std::forward<F>(f), _unknown, std::forward<Args>(args)...);
    }
 
     using i_unknown = TUnknown;

@@ -11,163 +11,165 @@
 
 namespace vb::wrapper
 {
-  template<typename TUnknown, typename TEnable = void>
-  class unknown;
+  template<typename TCom, typename TEnable = void>
+  class com;
 
   template<typename TElement>
   class safe_array;
 
-  template<typename TUnknown>
-  using derived_from_IUnknown = std::is_base_of<IUnknown, TUnknown>;
+  template<typename TCom>
+  using derived_from_IUnknown = std::is_base_of<IUnknown, TCom>;
 
-  template<typename TUnknown, typename F, typename... Args>
-  auto create_invoke_void(F&& f, Args&&... args)
+  template<typename TDeclared, typename TCasted, typename F, typename... Args>
+  static auto create_invoke_impl(F&& f, Args&&... args)
   {
-    return unknown<TUnknown>::create_impl<TUnknown, void>(std::forward<F>(f), std::forward<Args>(args)...);
+    TDeclared* u = nullptr;
+
+    auto rc = std::invoke(std::forward<F>(f), std::forward<Args>(args)..., reinterpret_cast<TCasted**>(&u));
+    util::throw_if_failed(rc, typeid(F).name());
+
+    return com<TDeclared>::wrap(u);
   }
 
   template<typename F, typename... Args>
   auto create_invoke(F&& f, Args&&... args)
   {
     using unknown_t = std::remove_pointer<std::remove_pointer<ArgumentInfo<F>::last_argument_t>::type>::type;
-    return unknown<unknown_t>::create_impl<unknown_t, unknown_t>(std::forward<F>(f), std::forward<Args>(args)...);
+    return create_invoke_impl<unknown_t, unknown_t>(std::forward<F>(f), std::forward<Args>(args)...);
   }
 
-  template<typename TUnknown>
-  class unknown<TUnknown, typename std::enable_if<derived_from_IUnknown<TUnknown>::value>::type>
+  template<typename TCom, typename F, typename... Args>
+  auto create_invoke_void(F&& f, Args&&... args)
   {
-  template <typename TUnknownOther, typename TEnable>
-  friend class unknown;
+    return create_invoke_impl<TCom, void>(std::forward<F>(f), std::forward<Args>(args)...);
+  }
+
+  template<typename TCom>
+  auto create_invoke_CoCreateInstance(const CLSID clsid, const IID iid)
+  {
+    return create_invoke_void<TCom>(CoCreateInstance, clsid, nullptr, CLSCTX_INPROC_SERVER, iid);
+  }
+
+  template<typename TCom>
+  class com<TCom, typename std::enable_if<derived_from_IUnknown<TCom>::value>::type>
+  {
+  template <typename TComOther, typename TEnable>
+  friend class com;
+
+  template<typename TDeclared, typename TCasted, typename F, typename... Args>
+  friend auto create_invoke_impl(F&& f, Args&&... args);
 
   public:
-    template<typename TDeclared, typename TCasted, typename F, typename... Args>
-    static auto create_impl(F&& f, Args&&... args)
-    {
-      TDeclared* u = nullptr;
-
-      auto rc = std::invoke(std::forward<F>(f), std::forward<Args>(args)..., reinterpret_cast<TCasted**>(&u));
-      util::throw_if_failed(rc, typeid(F).name());
-
-      return unknown<TDeclared>::wrap(u);
-    }
-
-    template<typename TOutput, typename F, typename... Args>
-    auto create_invoke_old(F&& f, Args&&... args)
-    {
-      return create_impl<TOutput, TOutput>(std::forward<F>(f), _unknown, std::forward<Args>(args)...);
-    }
-
     template<typename F, typename... Args>
     auto create_invoke(F&& f, Args&&... args)
     {
-      return vb::wrapper::create_invoke(std::forward<F>(f), _unknown, std::forward<Args>(args)...);
+      return vb::wrapper::create_invoke(std::forward<F>(f), com_object, std::forward<Args>(args)...);
    }
 
-    using i_unknown = TUnknown;
+    using com_type = TCom;
 
-    unknown(TUnknown* unknown = nullptr)
+    com(TCom* com = nullptr)
     { 
-      _unknown = unknown;
+      com_object = com;
       
-      if(_unknown)
+      if(com_object)
         add_reference();
     }
 
-    unknown(const unknown<TUnknown>& other)
+    com(const com<TCom>& other)
     {
-      _unknown = other._unknown;
+      com_object = other.com_object;
       add_reference();
     }
 
-    unknown& operator=(const unknown<TUnknown&> other)
+    com& operator=(const com<TCom&> other)
     {
       if (this != &other)
       {
         safe_release();
-        _unknown = other._unknown;
+        com_object = other.com_object;
         
-        if(_unknown)
+        if(com_object)
           add_reference();
       }
 
       return *this;
     }
 
-    unknown(unknown<TUnknown>&& other)
+    com(com<TCom>&& other)
     {
-      _unknown = other._unknown;
-      other._unknown = nullptr;
+      com_object = other.com_object;
+      other.com_object = nullptr;
     }
 
-    unknown& operator=(unknown<TUnknown>&& other)
+    com& operator=(com<TCom>&& other)
     {
       if (this != &other)
       {
         safe_release();
-        _unknown = other._unknown;
-        other._unknown = nullptr;
+        com_object = other.com_object;
+        other.com_object = nullptr;
       }
 
       return *this;
     }
 
-    unknown& operator=(TUnknown* unknown)
+    com& operator=(TCom* com)
     {
-      if (_unknown != unknown)
+      if (com_object != com)
       {
         safe_release();
-        _unknown = unknown;
+        com_object = com;
       }
       
       return *this;
     }
         
-    ~unknown()
+    ~com()
     {
       safe_release();
     }
 
     auto operator->()
     {
-      return _unknown;
+      return com_object;
     }
 
     bool is_valid()
     {
-      return _unknown != nullptr;
+      return com_object != nullptr;
     }
-
  
-    operator TUnknown*()
+    operator TCom*()
     {
-      return _unknown;
+      return com_object;
     }
     
-    /*private:*/public:
+    private:
     void add_reference()
     {
-      auto count = _unknown->AddRef();
-      printf("==> %s: add_reference: %u\n", typeid(TUnknown).name(), count);
+      auto count = com_object->AddRef();
+      printf("==> %s: add_reference: %u\n", typeid(TCom).name(), count);
     }
 
     void safe_release()
     {
-      if (_unknown)
+      if (com_object)
       {
-        auto count = _unknown->Release();
-        printf("==> %s: safe_release:  %u\n", typeid(TUnknown).name(), count);
-        _unknown = nullptr;
+        auto count = com_object->Release();
+        printf("==> %s: safe_release:  %u\n", typeid(TCom).name(), count);
+        com_object = nullptr;
       }
     }
 
-    static auto wrap(TUnknown* u)
+    static auto wrap(TCom* u)
     {
-      unknown wrapped = u;
+      com wrapped = u;
       u->Release();
       return wrapped;
     }
 
-    TUnknown* _unknown = nullptr;
+    TCom* com_object = nullptr;
   };
 
   template<typename TElement>
@@ -202,7 +204,7 @@ namespace vb::wrapper
     template<typename TCollection>
     TCollection as_std_collection()
     {
-      TElement::i_unknown **safe_array_items;
+      TElement::com_type **safe_array_items;
       int rc = SafeArrayAccessData(_safe_array, (void **)&safe_array_items);
       vb::util::throw_if_failed(rc, "Could not access safe array");
 

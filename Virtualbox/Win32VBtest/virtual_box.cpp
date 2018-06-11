@@ -8,12 +8,7 @@
 using namespace vb;
 
 virtual_box::virtual_box()
-  : vb_client(vb::wrapper::create_invoke_void<IVirtualBoxClient>(
-      CoCreateInstance,
-      CLSID_VirtualBoxClient,
-      nullptr,
-      CLSCTX_INPROC_SERVER,
-      IID_IVirtualBoxClient))
+  : vb_client(vb::wrapper::create_invoke_CoCreateInstance<IVirtualBoxClient>(CLSID_VirtualBoxClient, IID_IVirtualBoxClient))
   , vb_virtual_box(
       vb_client.create_invoke(&IVirtualBoxClient::get_VirtualBox))
 {
@@ -23,9 +18,9 @@ virtual_box::~virtual_box()
 {
 }
 
-std::list<vb::wrapper::unknown<IMachine>> virtual_box::get_machines()
+std::list<vb::wrapper::com<IMachine>> virtual_box::get_machines()
 {
-  vb::wrapper::safe_array<vb::wrapper::unknown<IMachine>> machine_array;
+  vb::wrapper::safe_array<vb::wrapper::com<IMachine>> machine_array;
 
   int rc = vb_virtual_box->get_Machines(machine_array);
   vb::util::throw_if_failed(rc, "Could not enumerate machines");

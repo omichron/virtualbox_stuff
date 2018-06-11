@@ -4,7 +4,7 @@
 
 using namespace vb;
 
-machine::machine(vb::wrapper::unknown<IMachine>& vb_machine_)
+machine::machine(vb::wrapper::com<IMachine>& vb_machine_)
   : vb_machine(vb_machine_)
 {
 }
@@ -26,12 +26,7 @@ void machine::start()
   if (vb_session.is_valid())
     return;
 
-  vb_session = vb::wrapper::create_invoke_void<ISession>(
-    CoCreateInstance,
-    CLSID_Session,
-    nullptr,
-    CLSCTX_INPROC_SERVER,
-    IID_ISession);
+  vb_session = vb::wrapper::create_invoke_CoCreateInstance<ISession>(CLSID_Session, IID_ISession);
 
   auto progress = vb_machine.create_invoke(&IMachine::LaunchVMProcess, 
     vb_session, wrapper::bstr("gui"), nullptr);

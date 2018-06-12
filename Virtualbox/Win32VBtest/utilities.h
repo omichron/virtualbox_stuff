@@ -3,6 +3,7 @@
 #include <comutil.h>  
 #include <list>
 #include "wrappers.hpp"
+#include "com_wrapper.hpp"
 
 namespace vb::util
 {
@@ -15,7 +16,7 @@ namespace vb::util
       ~error_info();
       std::string get_description();
     private:
-      vb::wrapper::unknown<IErrorInfo> vb_error_info;
+      vb::wrapper::com<IErrorInfo> vb_error_info;
     };
 }
 

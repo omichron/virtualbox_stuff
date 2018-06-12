@@ -8,7 +8,7 @@
 using namespace vb;
 
 virtual_box::virtual_box()
-  : vb_client(vb::wrapper::create_invoke_CoCreateInstance<IVirtualBoxClient>(CLSID_VirtualBoxClient, IID_IVirtualBoxClient))
+  : vb_client(vb::wrapper::create_invoke_CoCreateInstance<IVirtualBoxClient>())
   , vb_virtual_box(
       vb_client.create_invoke(&IVirtualBoxClient::get_VirtualBox))
 {

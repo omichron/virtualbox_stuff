@@ -1,6 +1,7 @@
 #include <comutil.h>  
 #include "machine.h"
 #include "utilities.h"
+#include "com_wrapper.hpp"
 
 using namespace vb;
 
@@ -26,7 +27,7 @@ void machine::start()
   if (vb_session.is_valid())
     return;
 
-  vb_session = vb::wrapper::create_invoke_CoCreateInstance<ISession>(CLSID_Session, IID_ISession);
+  vb_session = vb::wrapper::create_invoke_CoCreateInstance<ISession>();
 
   auto progress = vb_machine.create_invoke(&IMachine::LaunchVMProcess, 
     vb_session, wrapper::bstr("gui"), nullptr);

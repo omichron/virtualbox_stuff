@@ -9,12 +9,13 @@ namespace vb
   class machine
   {
   public:
-    explicit machine(vb::wrapper::com<IMachine>& vb_machine);
-    ~machine();
+    machine(vb::wrapper::com<IMachine> vb_machine);
+    ~machine() = default;
   private:
     vb::wrapper::com<IMachine> vb_machine;
     vb::wrapper::com<ISession> vb_session;
     vb::wrapper::com<IConsole> vb_console;
+    vb::wrapper::com<IDisplay> vb_display;
 
   public:
     std::string get_name();

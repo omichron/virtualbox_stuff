@@ -13,7 +13,7 @@ namespace vb::util
     {
     public:
       error_info();
-      ~error_info();
+      ~error_info() = default;
       std::string get_description();
     private:
       vb::wrapper::com<IErrorInfo> vb_error_info;

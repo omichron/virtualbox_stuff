@@ -11,12 +11,6 @@
 #include "machine.h"
 #include "utilities.h"
 
-#define SAFE_RELEASE(x) \
-    if (x) { \
-        x->Release(); \
-        x = NULL; \
-    }
-
 int listVMs(vb::virtual_box& virtual_box)
 {
   for(auto& machine : virtual_box.get_machines())

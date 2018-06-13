@@ -1,9 +1,7 @@
 #include "utilities.h"
 #include <exception>
 
-using namespace vb;
-
-util::error_info::error_info()
+vb::util::error_info::error_info()
 {
   try
   {
@@ -16,10 +14,7 @@ util::error_info::error_info()
   }
 }
 
-util::error_info::~error_info()
-{}
-
-std::string util::error_info::get_description()
+std::string vb::util::error_info::get_description()
 {
   if (!vb_error_info.is_valid())
     return "No error information available";
@@ -33,7 +28,7 @@ std::string util::error_info::get_description()
   return wrapper::bstr(errorDescription).str();
 }
 
-void util::throw_if_failed(HRESULT rc, const char* message)
+void vb::util::throw_if_failed(HRESULT rc, const char* message)
 {
   if (FAILED(rc))
     throw (std::exception((std::string(message) + ": " + error_info().get_description()).c_str()));

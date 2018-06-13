@@ -165,18 +165,23 @@ namespace vb::wrapper
     }
     
     private:
+    void print_reference_count(const char* function_name)
+    {
+      printf("==> %s: %s:%p %u\n", function_name, typeid(TCom).name(), com_object, reference_count);
+    }
+
     void add_reference()
     {
-      auto count = com_object->AddRef();
-      printf("==> %s: add_reference: %u\n", typeid(TCom).name(), count);
+      reference_count = com_object->AddRef();
+      print_reference_count("add_reference");
     }
 
     void safe_release()
     {
       if (com_object)
       {
-        auto count = com_object->Release();
-        printf("==> %s: safe_release:  %u\n", typeid(TCom).name(), count);
+        reference_count = com_object->Release();
+        print_reference_count("safe_release");
         com_object = nullptr;
       }
     }
@@ -184,10 +189,12 @@ namespace vb::wrapper
     static auto wrap(TCom* u)
     {
       com wrapped = u;
-      u->Release();
+      wrapped.reference_count = u->Release();
+      wrapped.print_reference_count("wrap");
       return wrapped;
     }
 
     TCom* com_object = nullptr;
+    unsigned int reference_count;
   };
 }

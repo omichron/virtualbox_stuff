@@ -1,6 +1,6 @@
 #pragma once
 #include "VirtualBox.h"
-#include <list>
+#include <vector>
 #include "machine.h"
 #include "wrappers.hpp"
 
@@ -10,10 +10,10 @@ namespace vb
   {
   public:
     virtual_box();
-    ~virtual_box();
+    ~virtual_box() = default;
 
   public:
-    std::list<vb::wrapper::com<IMachine>> get_machines();
+    std::vector<vb::wrapper::com<IMachine>> get_machines();
 
   private:
     vb::wrapper::com<IVirtualBoxClient> vb_client;

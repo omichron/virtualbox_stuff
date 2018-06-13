@@ -164,8 +164,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="com_wrapper.hpp" />
+    <ClInclude Include="display.h" />
     <ClInclude Include="function_traits.hpp" />
     <ClInclude Include="machine.h" />
+    <ClInclude Include="safearray_wrapper.hpp" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="utilities.h" />
@@ -174,6 +176,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\sdk\bindings\mscom\lib\VirtualBox_i.c" />
+    <ClCompile Include="display.cpp" />
     <ClCompile Include="machine.cpp" />
     <ClCompile Include="stdafx.cpp" />
     <ClCompile Include="utilities.cpp" />

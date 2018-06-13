@@ -1,10 +1,11 @@
-#include "virtual_box.h"
-
 #include <iostream>
 #include <windows.h>
 #include <exception>
-#include "utilities.h"
+
 #include "safearray_wrapper.hpp"
+#include "utilities.h"
+
+#include "virtual_box.h"
 
 vb::virtual_box::virtual_box()
   : vb_client(vb::wrapper::create_invoke_CoCreateInstance<IVirtualBoxClient>())

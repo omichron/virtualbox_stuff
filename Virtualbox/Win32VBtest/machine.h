@@ -3,6 +3,7 @@
 #include "VirtualBox.h"
 #include "utilities.h"
 #include "wrappers.hpp"
+#include "display.h"
 
 namespace vb
 {
@@ -15,7 +16,7 @@ namespace vb
     vb::wrapper::com<IMachine> vb_machine;
     vb::wrapper::com<ISession> vb_session;
     vb::wrapper::com<IConsole> vb_console;
-    vb::wrapper::com<IDisplay> vb_display;
+    vb::display display;
 
   public:
     std::string get_name();

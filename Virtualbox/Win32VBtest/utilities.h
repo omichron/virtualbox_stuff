@@ -1,8 +1,5 @@
 #pragma once
 #include <string>
-#include <comutil.h>  
-#include <list>
-#include "wrappers.hpp"
 #include "com_wrapper.hpp"
 
 namespace vb::util

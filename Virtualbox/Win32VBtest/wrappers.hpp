@@ -1,4 +1,5 @@
 #pragma once
+#include <comutil.h>
 #include "utilities.h"
 #include <list>
 #include <type_traits>

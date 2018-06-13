@@ -14,13 +14,11 @@ namespace vb
 
   public:
     std::vector<vb::wrapper::com<IMachine>> get_machines();
+    vb::machine find_machine(const std::string& name_or_id);
 
   private:
     vb::wrapper::com<IVirtualBoxClient> vb_client;
     vb::wrapper::com<IVirtualBox> vb_virtual_box;
-
-  public:
-    machine find_machine(const std::string& name_or_id);
   };
 }
 

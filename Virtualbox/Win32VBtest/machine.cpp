@@ -30,16 +30,11 @@ void vb::machine::start()
   util::throw_if_failed(rc, "Could not wait for completion");
 
   vb_console = vb_session.create_invoke(&ISession::get_Console);
-  vb_display = vb_console.create_invoke(&IConsole::get_Display);
   
-  unsigned long width, height, bitsPerPixel;
-  long xOrigin, yOrigin;
-  GuestMonitorStatus status;
-
+  
   Sleep(10000);
 
-  vb_display->GetScreenResolution(0, &width, &height, &bitsPerPixel, &xOrigin, &yOrigin, &status);
-
+  display = vb::display(vb_console);
 }
 
 void vb::machine::power_down()
@@ -56,6 +51,5 @@ void vb::machine::power_down()
 
   vb_console = nullptr;
   vb_session = nullptr;
-  vb_display = nullptr;
 }
 

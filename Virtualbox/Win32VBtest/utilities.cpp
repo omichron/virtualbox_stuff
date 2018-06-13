@@ -1,5 +1,7 @@
 #include "utilities.h"
 #include <exception>
+#include <comutil.h>  
+#include "wrappers.hpp"
 
 vb::util::error_info::error_info()
 {

@@ -1,22 +1,21 @@
 #pragma once
-#include "utilities.h"
 #include <list>
 #include <type_traits>
 #include <windows.h>
-#include <algorithm>
-#include <functional>
 #include <typeinfo>
-#include <tuple>
 #include "VirtualBox.h"
+
 #include "function_traits.hpp"
+
+namespace vb::util 
+{
+  void throw_if_failed(HRESULT rc, const char* message);
+}
 
 namespace vb::wrapper
 {
   template<typename TCom, typename TEnable = void>
   class com;
-
-  template<typename TElement>
-  class safe_array;
 
   template<typename TCom>
   using derived_from_IUnknown = std::is_base_of<IUnknown, TCom>;

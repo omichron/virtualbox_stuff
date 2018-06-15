@@ -84,6 +84,18 @@ namespace vb::wrapper
       return vb::wrapper::create_invoke(std::forward<F>(f), com_object, std::forward<Args>(args)...);
    }
 
+    template<typename F>
+    auto get_invoke(F&& f)
+    {
+      using return_t = std::remove_pointer<ArgumentInfo<F>::last_argument_t>::type;
+      return_t ret;
+
+      auto rc = std::invoke(std::forward<F>(f), com_object, &ret);
+      util::throw_if_failed(rc, typeid(F).name());
+
+      return ret;
+    }
+
     using com_type = TCom;
 
     com(TCom* com = nullptr)
@@ -166,7 +178,7 @@ namespace vb::wrapper
     private:
     void print_reference_count(const char* function_name)
     {
-      printf("==> %s: %s:%p %u\n", function_name, typeid(TCom).name(), com_object, reference_count);
+      //printf("==> %s: %s:%p %u\n", function_name, typeid(TCom).name(), com_object, reference_count);
     }
 
     void add_reference()

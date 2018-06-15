@@ -50,7 +50,7 @@ int testStartVM(vb::virtual_box& virtual_box)
     printf("Press enter to power off VM and close the session...\n");
     getchar();
 
-    machine.power_down();
+    //machine.power_down();
   }
   catch (std::exception ex)
   {
@@ -74,6 +74,8 @@ int main()
     testStartVM(virtual_box);
   }
   CoUninitialize();
+
+  std::cin.get(); std::cin.get();
 
 	return 0;
 }

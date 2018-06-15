@@ -2,18 +2,15 @@
 #include <exception>
 #include <comutil.h>  
 #include "wrappers.hpp"
+#include <windows.h>
+#include <comdef.h>
 
 vb::util::error_info::error_info()
 {
-  try
-  {
-    vb_error_info = 
-      vb::wrapper::create_invoke(GetErrorInfo, 0);
-  }
-  catch (...)
-  {
-    vb_error_info = nullptr;
-  }
+  IErrorInfo* error_info = nullptr;
+  auto ret = GetErrorInfo(0, &error_info);
+
+  vb_error_info = SUCCEEDED(ret) ? error_info : nullptr;
 }
 
 std::string vb::util::error_info::get_description()
@@ -33,5 +30,8 @@ std::string vb::util::error_info::get_description()
 void vb::util::throw_if_failed(HRESULT rc, const char* message)
 {
   if (FAILED(rc))
-    throw (std::exception((std::string(message) + ": " + error_info().get_description()).c_str()));
+  {
+    auto error_message = std::string(_com_error(rc).ErrorMessage());
+    throw (std::exception((std::string(message) + ": " + error_message + " - " + error_info().get_description()).c_str()));
+  }  
 }

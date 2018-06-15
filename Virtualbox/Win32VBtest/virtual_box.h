@@ -10,7 +10,7 @@ namespace vb
   {
   public:
     virtual_box();
-    ~virtual_box() = default;
+    //~virtual_box() = default;
 
   public:
     std::vector<vb::wrapper::com<IMachine>> get_machines();

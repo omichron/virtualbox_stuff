@@ -17,8 +17,9 @@ namespace vb
     explicit display(vb::wrapper::com<IConsole> console);
 
     void update();
+    void take_screenshot();
 
-  private:
+  public:
     unsigned long width = 0;
     unsigned long height = 0; 
     unsigned long bits_per_pixel = 0;

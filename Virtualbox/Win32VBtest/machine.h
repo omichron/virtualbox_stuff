@@ -11,7 +11,7 @@ namespace vb
   {
   public:
     machine(vb::wrapper::com<IMachine> vb_machine);
-    ~machine() = default;
+    ~machine();
   private:
     vb::wrapper::com<IMachine> vb_machine;
     vb::wrapper::com<ISession> vb_session;
